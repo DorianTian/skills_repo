@@ -67,7 +67,30 @@ with open(settings_path, "w") as f:
 print("  ✓ Plugins enabled: superpowers, frontend-design, skill-creator")
 PYEOF
 
-# ── Step 3: notebooklm 依赖 ──
+# ── Step 3: 全局配置文件 ──
+echo ""
+echo "▶ Step 3: Installing global configs..."
+
+# CLAUDE.md（全局指令：代码规范、交互规则、深度文档规范）
+if [[ -f "$SCRIPT_DIR/claude-config/CLAUDE.md" ]]; then
+  if [[ -f "$HOME/.claude/CLAUDE.md" ]]; then
+    cp "$HOME/.claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md.bak"
+    echo "  ↻ CLAUDE.md (backed up → CLAUDE.md.bak)"
+  fi
+  cp "$SCRIPT_DIR/claude-config/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
+  echo "  ✓ CLAUDE.md"
+fi
+
+# .prettierrc（全局 Prettier 配置）
+if [[ -f "$SCRIPT_DIR/.prettierrc" ]]; then
+  if [[ -f "$HOME/.prettierrc" ]]; then
+    cp "$HOME/.prettierrc" "$HOME/.prettierrc.bak"
+  fi
+  cp "$SCRIPT_DIR/.prettierrc" "$HOME/.prettierrc"
+  echo "  ✓ .prettierrc"
+fi
+
+# ── Step 4: notebooklm 依赖 ──
 echo ""
 echo "▶ Step 3: NotebookLM dependencies..."
 if [[ -f "$SKILLS_DIR/notebooklm/requirements.txt" ]]; then
@@ -90,4 +113,5 @@ echo "  ✅ Done! Restart Claude Code to load all skills & plugins."
 echo ""
 echo "  Skills:  best-minds, expert-team, find-skills, notebooklm"
 echo "  Plugins: superpowers, frontend-design, skill-creator"
+echo "  Configs: CLAUDE.md, .prettierrc"
 echo "══════════════════════════════════════════════════════════"

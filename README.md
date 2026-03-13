@@ -29,8 +29,16 @@ cd skills_repo
 | `frontend-design` | 官方 | 高质量前端 UI 生成 |
 | `skill-creator` | 官方 | 创建和优化 skills |
 
+### Global Configs
+
+| 文件 | 用途 |
+|------|------|
+| `claude-config/CLAUDE.md` | 全局指令：交互规则、代码规范、深度文档规范 |
+| `.prettierrc` | 全局 Prettier 配置（semi, singleQuote, 120 cols） |
+
 ## setup.sh 做了什么
 
 1. 复制 `skills/` 下所有 skill 到 `~/.claude/skills/`
 2. 在 `~/.claude/settings.json` 中启用 3 个 plugins
-3. 为 notebooklm 安装 Python 依赖（`.venv`）
+3. 复制 `CLAUDE.md` 到 `~/.claude/`、`.prettierrc` 到 `~/`
+4. 为 notebooklm 安装 Python 依赖（`.venv`）
