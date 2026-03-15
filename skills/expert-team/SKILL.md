@@ -1,6 +1,6 @@
 ---
 name: expert-team
-description: 自动激活专家顾问团。根据问题自动匹配最合适的专家角色视角来回答，覆盖前端架构、AI工程、数据系统、全栈产品、技术转型、脚本编写、SQL、DevOps八大方向。触发词：任何技术问题、架构设计、方案评审、学习规划、写脚本、写SQL、部署运维
+description: Engineering expert panel for solving technical problems, reviewing solutions, and making architecture decisions. Use when user asks how to solve a problem, review code/architecture, optimize performance, debug issues, choose between technologies, write scripts/SQL, or design systems. Trigger words - 怎么解决, 怎么实现, 怎么优化, 怎么排查, 怎么设计, 怎么部署, 帮我看看, 这个方案合理吗, 有没有问题, 选哪个好, 选型对比, review my code, how to architect, how to fix, how to optimize, 架构评审, 技术方案, 写个脚本, SQL怎么写, 前端性能, 数据平台, 帮我写个, 生产上遇到, what's wrong with, best practice, 最佳实践
 ---
 
 <!--

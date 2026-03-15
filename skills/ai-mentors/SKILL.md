@@ -1,6 +1,6 @@
 ---
 name: ai-mentors
-description: Use when asking AI/ML learning questions, needing expert perspectives on LLM applications, NL2SQL, ML systems, RAG, Agent, AI career strategy, or wanting multi-expert debate on AI technical decisions. Trigger words - AI learning, ask mentor, expert opinion, Karpathy perspective, how would X think about this
+description: Use when asking AI/ML learning questions, needing expert perspectives on LLM applications, NL2SQL, ML systems, RAG, Agent, AI career strategy, or wanting multi-expert debate on AI technical decisions. Trigger words - AI learning, ask mentor, expert opinion, Karpathy perspective, how would X think about this, AI怎么学, LLM原理, RAG怎么做, Agent怎么实现, 模型怎么训练, prompt怎么写, AI职业规划, 问问专家, 从专家角度, NL2SQL怎么优化, 向量数据库怎么选, AI应用怎么做, 大模型怎么用
 ---
 
 <!--
