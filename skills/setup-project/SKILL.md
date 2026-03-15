@@ -23,17 +23,25 @@ If no arguments provided, ask the user for:
 
 ### Prettier Configuration
 
-All project types share the same Prettier config (based on OpenMetadata rules).
+All project types share the same Prettier config.
 
-File: `.prettierrc.yaml`
+File: `.prettierrc`
 
-```yaml
-# Based on OpenMetadata formatting rules
----
-tabWidth: 2
-jsxBracketSameLine: true
-htmlWhitespaceSensitivity: 'strict'
-singleQuote: true
+```json
+{
+  "semi": false,
+  "singleQuote": true,
+  "jsxSingleQuote": false,
+  "trailingComma": "all",
+  "printWidth": 100,
+  "tabWidth": 2,
+  "arrowParens": "always",
+  "endOfLine": "lf",
+  "bracketSpacing": true,
+  "bracketSameLine": false,
+  "htmlWhitespaceSensitivity": "css",
+  "vueIndentScriptAndStyle": false
+}
 ```
 
 > Frontend projects additionally install `prettier-plugin-tailwindcss` and add `plugins: ['prettier-plugin-tailwindcss']`.
