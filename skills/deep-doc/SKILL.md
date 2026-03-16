@@ -1,6 +1,6 @@
 ---
 name: deep-doc
-description: Generate deep technical analysis documents covering academic principles and engineering practice. Trigger when user asks to create/write/generate a technical deep-dive document, analysis doc, or 深度解析 document.
+description: "Generate deep technical analysis documents. Trigger when user asks to: write/create/generate a technical document, 写文档, 总结, 技术总结, 深度解析, 源码分析, 原理分析, 深入分析, 知识整理, 学习笔记, 写一篇, 技术文档, 梳理一下XX, 帮我整理, deep dive, technical analysis, write a doc about."
 user-invocable: true
 ---
 
@@ -23,7 +23,13 @@ $ARGUMENTS
 
 ## Document Standards
 
-**CRITICAL**: Follow ALL rules from the "深度技术文档规范" section in `~/.claude/CLAUDE.md`. Key requirements:
+文档必须 **学术深度与工程实践并重**，不能停留在概念科普层面。
+
+### Core Principles
+1. **深度优先**：每个技术点必须追溯到底层实现原理（源码级、算法级、数据结构级），不接受"黑箱式"描述
+2. **原理驱动**：每个论点必须提供论据（为什么这样设计）、底层实现（源码怎么做的）、代码示例（可运行片段）
+3. **生产导向**：每个知识点都要回答"在真实项目中怎么用、会遇到什么问题"
+4. **全面性**：覆盖 设计动机 → 底层原理 → 实现细节 → 生产实践 → 局限与坑点 完整链路
 
 ### Depth Requirements
 - Every technical point must trace back to **underlying implementation** (source code, algorithms, data structures)
@@ -41,6 +47,34 @@ Thesis (What & Why)
   → Production Application (real-world usage, config, tuning)
   → Limitations (when NOT to use, performance boundaries)
   → Pitfalls (production issues with root cause + solution)
+```
+
+### 论证链路（每个知识点必须完成的链条）
+
+```
+论点（What & Why）
+  │  这个东西是什么？为什么需要它？解决什么问题？
+  ▼
+底层原理（How - 学术/源码层面）
+  │  核心算法、数据结构、设计模式
+  │  源码关键路径（如 React Fiber 树的 beginWork → completeWork）
+  │  时间/空间复杂度分析（如适用）
+  ▼
+论据与权衡（Why this way）
+  │  为什么选择这个方案而非其他？
+  │  设计权衡（trade-off）是什么？
+  ▼
+代码示例（Proof）
+  │  可运行的代码片段，验证原理。标注关键行的作用
+  ▼
+生产应用（Real-world）
+  │  在实际项目中如何落地。配置、调优、最佳实践
+  ▼
+缺陷与局限（Limitations）
+  │  不适合什么场景？性能瓶颈在哪？
+  ▼
+坑点（Pitfalls）
+    生产上实际遇到的问题，附带根因分析和解决方案
 ```
 
 ### Document Structure
@@ -67,7 +101,7 @@ Thesis (What & Why)
 - Comparisons in tables, flows in ASCII art
 - Code blocks with language tags (```typescript / ```go / ```sql)
 - Key terms **bold**, definitions in `> blockquote`
-- Source references with file paths
+- Source references with file paths (e.g., `react-reconciler/src/ReactFiberBeginWork.js`)
 
 ## Writing Process
 

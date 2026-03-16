@@ -29,7 +29,7 @@ File: `.prettierrc`
 
 ```json
 {
-  "semi": false,
+  "semi": true,
   "singleQuote": true,
   "jsxSingleQuote": false,
   "trailingComma": "all",

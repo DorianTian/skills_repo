@@ -1,6 +1,6 @@
 ---
 name: best-minds
-description: 模拟器思维：不问"你怎么看"，而是问"世界上谁最懂这个？TA 会怎么说？"。触发词：最强大脑、顶级专家、世界级、best minds、谁最懂这个、如果是XX会怎么看、大佬怎么看、业界怎么看、换个角度看、从XX的视角、XX会怎么说、站在XX的立场
+description: "Simulate the world's best expert on ANY topic. Use when user wants authoritative perspective beyond AI/ML domain — philosophy, business, history, science, management, economics, etc. Triggers: 最强大脑, 顶级专家, 世界级, best minds, 谁最懂这个, 如果是XX会怎么看, 大佬怎么看, 业界怎么看, 换个角度看, 从XX的视角, XX会怎么说, 站在XX的立场, what would X say, expert take, who knows this best, world-class perspective."
 ---
 
 <!--

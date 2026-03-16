@@ -1,6 +1,6 @@
 ---
 name: ai-mentors
-description: Use when asking AI/ML learning questions, needing expert perspectives on LLM applications, NL2SQL, ML systems, RAG, Agent, AI career strategy, or wanting multi-expert debate on AI technical decisions. Trigger words - AI learning, ask mentor, expert opinion, Karpathy perspective, how would X think about this, AI怎么学, LLM原理, RAG怎么做, Agent怎么实现, 模型怎么训练, prompt怎么写, AI职业规划, 问问专家, 从专家角度, NL2SQL怎么优化, 向量数据库怎么选, AI应用怎么做, 大模型怎么用
+description: "AI/ML expert mentor panel (Karpathy, Chip Huyen, Simon Willison, Shreya Shankar, Swyx, Andrew Ng). Use when user asks ANY AI/ML question — learning, implementation, career, or technical decisions. Triggers: AI怎么学, LLM原理, RAG怎么做, Agent怎么实现, prompt怎么写, AI职业规划, NL2SQL, 向量数据库, 大模型, 模型训练, fine-tuning, embedding, AI应用, AI落地, AI选型, 模型部署, AI怎么入门, how to learn AI, LLM architecture, model serving, AI career, expert perspective, ML systems, training pipeline, inference optimization."
 ---
 
 <!--

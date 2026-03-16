@@ -1,12 +1,12 @@
 ---
 name: design-guide
-description: "Contextual design pattern selection guide. Use when making architecture decisions, choosing design patterns, reviewing code structure, or designing new modules. Covers GoF patterns, data architecture patterns (CQRS, Event Sourcing, Saga), Repository Pattern, frontend patterns, and anti-patterns. Trigger words: design pattern, architecture decision, how to structure, which pattern, 设计模式, 架构设计"
+description: "System design rules & pattern reference manual. This is a REFERENCE TOOLKIT, not a decision-maker — use expert-team for decisions. Auto-load this skill as context when expert-team needs system design rules or pattern options. Also load directly via /design-guide when user explicitly asks for pattern lookup or design rule check. Covers: system design invariants (architecture, API, DB, observability, performance, security, testing, Git) + GoF patterns + data architecture patterns + frontend patterns + anti-patterns."
 user-invocable: true
 ---
 
-# Design Pattern Selection Guide
+# System Design & Pattern Selection Guide
 
-Help choose the right design pattern for the current scenario.
+System design invariants + contextual design pattern selection.
 
 ## Arguments
 
@@ -31,6 +31,75 @@ Before suggesting any pattern, evaluate in order:
 2. **Is the complexity justified by current requirements (not hypothetical future)?** → If no, use simpler approach
 3. **Will the team understand and maintain this pattern?** → If uncertain, prefer explicit over clever
 4. **Does Dorian's CLAUDE.md already mandate an approach?** → Invariants (layered architecture, SOLID, no-any) always apply on top of pattern choices
+
+---
+
+## System Design Invariants
+
+基线：**Google SRE、AWS Well-Architected Framework、12-Factor App、Clean Architecture**。标记【强制】的规则不可违反，其余为推荐默认值，简单项目/原型期可酌情简化。
+
+### 一、架构设计
+
+- **分层架构【强制】**：至少 Controller/Handler → Service/UseCase → Repository/DAL 三层。禁止 Controller 直接操作数据库，禁止 Service 层感知 HTTP/RPC 协议细节
+- **Bounded Context**：按领域边界划分模块，每个模块拥有独立的数据模型。跨模块通信通过明确的接口/事件，禁止共享数据库表
+- **依赖方向单向**：外层依赖内层，内层不感知外层。基础设施（DB、MQ、外部 API）作为可替换的适配器注入
+- **配置外置（12-Factor）**：环境相关配置通过环境变量或配置中心注入，禁止硬编码
+- **无状态服务**：业务服务不在本地存储会话状态，状态下沉到 Redis/DB
+- **故障隔离**：外部依赖调用配置超时和重试（指数退避）；关键链路增加熔断
+
+### 二、API 设计
+
+- **RESTful 语义**：资源用名词复数（`/users`），操作用 HTTP Method。禁止 `GET /getUser` 风格
+- **版本管理**：API 带版本号（`/v1/`），破坏性变更必须升版本
+- **统一响应格式**：`{ "code": 0, "message": "ok", "data": {}, "traceId": "xxx" }`，错误附 error code + message
+- **分页标准化**：`cursor` 游标分页（大数据量）或 `page/pageSize`（后台管理），返回 `total` 和 `hasMore`
+- **幂等设计**：写操作必须支持幂等，关键操作使用 idempotency key
+- **入参校验**：API 边界严格校验，内部方法信任上游数据。校验失败返回 400 + 字段错误
+
+### 三、数据库设计
+
+- **范式与反范式平衡**：OLTP 至少 3NF；读多写少允许冗余，必须注释冗余原因和同步策略
+- **主键策略**：自增 bigint 或 Snowflake ID，禁止 UUID 作为 InnoDB 聚簇索引主键
+- **索引纪律**：慢查询必须有索引优化；联合索引最左前缀，区分度高的列在前；禁止低基数列独立索引
+- **变更纪律**：Schema 变更通过 Migration 文件管理（版本化、可回滚），禁止手动执行 DDL
+- **软删除**：业务数据 `deleted_at` 软删除，审计数据永不物理删除
+- **大表策略**：预估超 1000 万行的表，设计之初规划分区或分表
+
+### 四、错误处理与可观测性
+
+- **结构化日志【强制】**：JSON 格式，含 `timestamp`、`level`、`traceId`、`service`、`message`、`context`
+- **错误分级**：WARN（可自愈）、ERROR（需人工介入）、FATAL（立即告警）
+- **链路追踪**：跨服务传播 traceId，请求可追溯完整调用链
+- **健康检查**：`/health`（存活）+ `/ready`（就绪）
+- **指标埋点（RED）**：Rate、Errors、Duration（P50/P95/P99）
+
+### 五、性能工程
+
+- **缓存策略**：Cache-Aside + TTL，防击穿/穿透/雪崩
+- **异步化**：耗时操作走消息队列，接口返回任务 ID
+- **批量优先**：禁止循环内 DB/API 调用，改为批量查询 + 内存关联
+- **资源预算**：首屏 JS ≤ 200KB（gzipped）、LCP ≤ 2.5s、接口 P95 ≤ 500ms
+
+### 六、安全基线
+
+- **输入永不信任**：SQL 参数化查询，HTML 框架转义，禁止字符串拼接
+- **认证鉴权分离**：独立中间件，不混在业务逻辑中
+- **最小权限原则**：数据库账号按服务隔离，禁止 root 连生产
+- **敏感数据脱敏**：日志/响应禁止输出密码、token、手机号等
+- **密钥管理**：环境变量或 Vault 注入，禁止提交代码仓库
+
+### 七、测试策略
+
+- **测试金字塔**：单元（70%）→ 集成（20%）→ E2E（10%）
+- **测试独立性**：可独立运行，不依赖执行顺序
+- **边界覆盖**：空值、空数组、超长字符串、并发、超时
+
+### 八、Git 与发布
+
+- **Conventional Commits**：`feat:` / `fix:` / `refactor:` / `chore:` / `docs:` / `perf:` / `test:`
+- **分支策略**：`main` + `develop` + `feature/*` + `hotfix/*`，Feature 分支 ≤ 3 天
+- **Code Review 必须**：PR 合入至少 1 人 approve，描述含改了什么、为什么、如何验证
+- **发布纪律**：禁止周五下午发布，上线必须有回滚方案
 
 ---
 

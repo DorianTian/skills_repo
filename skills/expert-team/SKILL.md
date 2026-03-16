@@ -1,6 +1,7 @@
 ---
 name: expert-team
-description: Engineering expert panel for solving technical problems, reviewing solutions, and making architecture decisions. Use when user asks how to solve a problem, review code/architecture, optimize performance, debug issues, choose between technologies, write scripts/SQL, or design systems. Trigger words - 怎么解决, 怎么实现, 怎么优化, 怎么排查, 怎么设计, 怎么部署, 帮我看看, 这个方案合理吗, 有没有问题, 选哪个好, 选型对比, review my code, how to architect, how to fix, how to optimize, 架构评审, 技术方案, 写个脚本, SQL怎么写, 前端性能, 数据平台, 帮我写个, 生产上遇到, what's wrong with, best practice, 最佳实践
+description: "8-role engineering expert panel — the PRIMARY skill for all engineering problem-solving, architecture decisions, and design questions (not AI/ML — use ai-mentors for that). Experts reference /design-guide as their toolkit for system design rules and pattern options. Use when user asks to: solve problems, review code/architecture, make design decisions, optimize performance, debug issues, write scripts/SQL, choose technologies, or discuss 系统设计/架构设计/API设计/数据库设计/技术方案/方案设计. Triggers: 怎么解决, 怎么实现, 怎么优化, 怎么排查, 怎么设计, 怎么部署, 帮我看看, 这个方案合理吗, 有没有问题, 选哪个好, 选型对比, 架构评审, 技术方案, review my code, how to architect, how to fix, how to optimize, 写个脚本, SQL怎么写, 前端性能, 数据平台, 帮我写个, 生产上遇到, best practice, 最佳实践, 帮我分析, 性能瓶颈, 怎么排错, 设计模式, 架构设计, 方案设计, 模块划分."
+user-invocable: true
 ---
 
 <!--
@@ -77,9 +78,16 @@ pos: 核心 skill，自动激活
 3. **简单/明确的问题:** 不标注角色，保持自然对话，避免形式化
 4. **用户主动指定:** 尊重用户指定的角色或模式（全员/对辩）
 
+## Skill 协同
+
+**涉及设计类问题时，expert-team 和 design-guide 协同工作，有先后顺序：**
+
+1. **先 expert-team**：专家团从各自视角分析问题、给出建议
+2. **再 design-guide 补充**：用系统设计规范和模式速查表校验、补充专家建议——如果专家遗漏了某些规范约束、未考虑某些设计模式、或判断有偏差，由 design-guide 补齐
+
 ## 核心原则
 
-- 这5个角色是**视角**，不是人格表演。目的是提供多维度的专业判断。
+- 这些角色是**视角**，不是人格表演。目的是提供多维度的专业判断。
 - 回答要**具体、可执行**，不要空泛的建议。
 - 用户是9年经验的资深工程师，以**对等身份**讨论，不要居高临下。
 - 敢于指出方案中的问题，给出有观点的建议，而非两边讨好。

@@ -99,14 +99,7 @@ if [[ -f "$SCRIPT_DIR/claude-config/CLAUDE.md" ]]; then
   echo "  ✓ CLAUDE.md"
 fi
 
-# .prettierrc（全局 Prettier 配置）
-if [[ -f "$SCRIPT_DIR/.prettierrc" ]]; then
-  if [[ -f "$HOME/.prettierrc" ]]; then
-    cp "$HOME/.prettierrc" "$HOME/.prettierrc.bak"
-  fi
-  cp "$SCRIPT_DIR/.prettierrc" "$HOME/.prettierrc"
-  echo "  ✓ .prettierrc"
-fi
+# .prettierrc 由 cursor_vscode_config 仓库管理，不在此处安装
 
 # ── Step 4: notebooklm 依赖 ──
 echo ""
@@ -131,5 +124,5 @@ echo "  ✅ Done! Restart Claude Code to load all skills & plugins."
 echo ""
 echo "  Skills: $SKILL_LIST"
 echo "  Plugins: superpowers, frontend-design, skill-creator, planning-with-files"
-echo "  Configs: CLAUDE.md, .prettierrc"
+echo "  Configs: CLAUDE.md"
 echo "══════════════════════════════════════════════════════════"
