@@ -1,6 +1,6 @@
 # Claude Code Skills & Plugins
 
-> 一键同步 Claude Code 的 skills 和 plugins 到任意机器。
+> 一键同步 Claude Code 的 skills、plugins、全局配置和 memory 到任意机器。
 
 ## Quick Start
 
@@ -12,7 +12,7 @@ cd skills_repo
 
 ## 包含内容
 
-### Skills (9)
+### Skills (8)
 
 | Skill | 用途 |
 |-------|------|
@@ -24,7 +24,6 @@ cd skills_repo
 | `find-skills` | 发现和安装新的 skills |
 | `notebooklm` | 从 Claude Code 直接查询 Google NotebookLM |
 | `setup-project` | 项目脚手架（Next.js 16 / Koa.js / Full-stack） |
-| `setup-vscode-neovim` | Cursor/VSCode + vscode-neovim 一键配置 |
 
 ### Plugins (4)
 
@@ -39,19 +38,22 @@ cd skills_repo
 
 | 文件 | 用途 |
 |------|------|
-| `claude-config/CLAUDE.md` | 全局指令：交互规则、代码规范、系统设计规范（分层 invariant/recommended）、深度文档规范 |
+| `claude-config/CLAUDE.md` | 全局指令：交互规则、代码规范、AI 驱动开发模式 |
 | `claude-config/settings.json` | 插件启用配置 + marketplace 源 |
-| `.prettierrc` | 全局 Prettier 配置（semi, singleQuote, 120 cols） |
+
+> `.prettierrc` 由 [cursor_vscode_config](https://github.com/DorianTian/cursor_vscode_config) 管理，不在此处安装。
 
 ## setup.sh 做了什么
 
 1. 复制 `skills/` 下所有 skill 到 `~/.claude/skills/`
 2. 在 `~/.claude/settings.json` 中启用 4 个 plugins（含 marketplace 配置）
-3. 复制 `CLAUDE.md` 到 `~/.claude/`、`.prettierrc` 到 `~/`
+3. 复制 `CLAUDE.md` 到 `~/.claude/`
 4. 为 notebooklm 安装 Python 依赖（`.venv`）
+5. 将 Claude memory 迁移至 iCloud Drive 并建立软链接，实现跨机自动同步
 
 ## 设计理念
 
 - **CLAUDE.md 管 invariants**：只放永远不可违反的规则（分层架构、SOLID、no-any 等）
 - **Skills 管 contextual decisions**：设计模式选择（`/design-guide`）、项目脚手架（`/setup-project`）等按需调用
+- **Memory 走 iCloud**：跨机一致性，自动同步，无需手动维护
 - 避免规则过载导致 LLM attention dilution 和 rule conflicts
