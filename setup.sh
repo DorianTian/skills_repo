@@ -109,31 +109,11 @@ if [[ -f "$SKILLS_DIR/notebooklm/requirements.txt" ]]; then
   fi
 fi
 
-# ── Step 5: Memory iCloud 同步 ──
+# ── Step 5: iCloud sync ──
 echo ""
-echo "▶ Step 5: Memory iCloud sync..."
-
-ICLOUD_DIR="$HOME/Library/Mobile Documents/com~apple~CloudDocs"
-MEMORY_DIR_NAME="$(echo "$HOME" | tr '/' '-')"
-MEMORY_PATH="$HOME/.claude/projects/$MEMORY_DIR_NAME/memory"
-ICLOUD_MEMORY="$ICLOUD_DIR/claude-memory"
-
-if [[ ! -d "$ICLOUD_DIR" ]]; then
-  echo "  ⚠ iCloud Drive not found, skipping"
-  echo "    (sign in to iCloud and enable Desktop & Documents Folders)"
-elif [[ -L "$MEMORY_PATH" ]]; then
-  echo "  ✓ Memory already synced via iCloud (symlink exists)"
-else
-  mkdir -p "$ICLOUD_MEMORY"
-  if [[ -d "$MEMORY_PATH" ]]; then
-    echo "  ↻ Migrating existing memory to iCloud..."
-    cp -r "$MEMORY_PATH/." "$ICLOUD_MEMORY/"
-    rm -rf "$MEMORY_PATH"
-  fi
-  mkdir -p "$(dirname "$MEMORY_PATH")"
-  ln -s "$ICLOUD_MEMORY" "$MEMORY_PATH"
-  echo "  ✓ Memory → ~/iCloud Drive/claude-memory (symlinked)"
-fi
+echo "▶ Step 5: iCloud sync..."
+echo "  ℹ Memory & Knowledge iCloud sync → managed by claude-code-config repo"
+echo "    Run: cd ~/Desktop/workspace/claude-code-config && ./install.sh --sync"
 
 # ── Done ──
 echo ""
@@ -143,5 +123,5 @@ echo ""
 echo "  Skills: $SKILL_LIST"
 echo "  Plugins: superpowers, frontend-design, skill-creator, planning-with-files"
 echo "  Configs: → claude-code-config repo"
-echo "  Memory:  iCloud Drive/claude-memory"
+echo "  iCloud:  → claude-code-config repo (./install.sh --sync)"
 echo "══════════════════════════════════════════════════════════"
