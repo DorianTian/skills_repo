@@ -87,17 +87,9 @@ PYEOF
 
 # ── Step 3: 全局配置文件 ──
 echo ""
-echo "▶ Step 3: Installing global configs..."
-
-# CLAUDE.md（全局指令：代码规范、交互规则、系统设计规范、深度文档规范）
-if [[ -f "$SCRIPT_DIR/claude-config/CLAUDE.md" ]]; then
-  if [[ -f "$HOME/.claude/CLAUDE.md" ]]; then
-    cp "$HOME/.claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md.bak"
-    echo "  ↻ CLAUDE.md (backed up → CLAUDE.md.bak)"
-  fi
-  cp "$SCRIPT_DIR/claude-config/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
-  echo "  ✓ CLAUDE.md"
-fi
+echo "▶ Step 3: Global configs..."
+echo "  ℹ CLAUDE.md, settings.json, statusline.sh → managed by claude-code-config repo"
+echo "    Install: cd ~/Desktop/workspace/claude-code-config && ./install.sh"
 
 # .prettierrc 由 cursor_vscode_config 仓库管理，不在此处安装
 
@@ -150,6 +142,6 @@ echo "  ✅ Done! Restart Claude Code to load all skills & plugins."
 echo ""
 echo "  Skills: $SKILL_LIST"
 echo "  Plugins: superpowers, frontend-design, skill-creator, planning-with-files"
-echo "  Configs: CLAUDE.md"
+echo "  Configs: → claude-code-config repo"
 echo "  Memory:  iCloud Drive/claude-memory"
 echo "══════════════════════════════════════════════════════════"
