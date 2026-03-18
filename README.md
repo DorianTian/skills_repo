@@ -5,9 +5,35 @@
 ## Quick Start
 
 ```bash
-git clone git@github.com:DorianTian/skills_repo.git
-cd skills_repo
+git clone git@github.com:DorianTian/skills_repo.git ~/Desktop/workspace/skills_repo
+cd ~/Desktop/workspace/skills_repo
+./setup.sh              # Interactive mode
+./setup.sh --all        # Non-interactive: install all
+./setup.sh --link       # Register CLI command
+```
+
+After `--link`, you can use `claude-skills` from anywhere:
+
+```bash
+claude-skills             # Interactive menu
+claude-skills --all       # Install all skills + plugins
+```
+
+## New Machine Setup
+
+```bash
+# 1. Clone
+git clone git@github.com:DorianTian/skills_repo.git ~/Desktop/workspace/skills_repo
+cd ~/Desktop/workspace/skills_repo
+
+# 2. Interactive install (select skills + plugins)
 ./setup.sh
+
+# 3. Register CLI command (optional, select 'l' in interactive menu or:)
+./setup.sh --link
+
+# Requires ~/.local/bin in PATH. If not, add to ~/.zshrc:
+#   export PATH="$HOME/.local/bin:$PATH"
 ```
 
 ## 包含内容
@@ -34,9 +60,20 @@ cd skills_repo
 | `skill-creator` | 官方 | 创建和优化 skills |
 | `planning-with-files` | 社区 | Manus 风格文件化规划（task_plan.md / findings.md / progress.md） |
 
+## CLI Usage
+
+```bash
+claude-skills                 # Interactive menu (select individual skills or all)
+claude-skills --all           # Install all skills + plugins
+claude-skills --skills        # Install skills only
+claude-skills --plugins       # Install plugins only
+claude-skills --link          # Register CLI command
+claude-skills --help          # Show help
+```
+
 ## setup.sh 做了什么
 
-1. 复制 `skills/` 下所有 skill 到 `~/.claude/skills/`
+1. 复制 `skills/` 下所有 skill 到 `~/.claude/skills/`（支持单选）
 2. 在 `~/.claude/settings.json` 中启用 4 个 plugins（含 marketplace 配置）
 3. 为 notebooklm 安装 Python 依赖（`.venv`）
 
@@ -50,7 +87,7 @@ cd skills_repo
 
 ## Related Repos
 
-| Repo | Description |
-|------|-------------|
-| [claude_setting](https://github.com/DorianTian/claude_setting) | Claude Code runtime config (settings, statusline, CLAUDE.md, iCloud sync) |
-| [cursor_vscode_config](https://github.com/DorianTian/cursor_vscode_config) | IDE configuration (Cursor/VSCode/Neovim/formatters) |
+| Repo | CLI Command | Description |
+|------|-------------|-------------|
+| [claude_setting](https://github.com/DorianTian/claude_setting) | `claude-config` | Claude Code runtime config (settings, statusline, CLAUDE.md, iCloud sync) |
+| [cursor_vscode_config](https://github.com/DorianTian/cursor_vscode_config) | `ide-config` | IDE configuration (Cursor/VSCode/Neovim/Ghostty/Zsh/formatters) |
