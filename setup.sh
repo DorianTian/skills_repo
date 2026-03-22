@@ -223,5 +223,5 @@ echo "════════════════════════�
 echo "  ✅ Done! Restart Claude Code to load changes."
 echo ""
 echo "  ℹ Global configs (settings.json, statusline, CLAUDE.md):"
-echo "    → claude-config (or cd ~/Desktop/workspace/claude-code-config && ./install.sh)"
+echo "    → claude-config (or cd ~/dev-env/claude_setting && ./install.sh)"
 echo "══════════════════════════════════════════════════════════"

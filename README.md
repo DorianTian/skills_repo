@@ -5,8 +5,8 @@
 ## Quick Start
 
 ```bash
-git clone git@github.com:DorianTian/skills_repo.git ~/Desktop/workspace/skills_repo
-cd ~/Desktop/workspace/skills_repo
+git clone git@github.com:DorianTian/skills_repo.git ~/dev-env/skills_repo
+cd ~/dev-env/skills_repo
 ./setup.sh              # Interactive mode
 ./setup.sh --all        # Non-interactive: install all
 ./setup.sh --link       # Register CLI command
@@ -23,8 +23,8 @@ claude-skills --all       # Install all skills + plugins
 
 ```bash
 # 1. Clone
-git clone git@github.com:DorianTian/skills_repo.git ~/Desktop/workspace/skills_repo
-cd ~/Desktop/workspace/skills_repo
+git clone git@github.com:DorianTian/skills_repo.git ~/dev-env/skills_repo
+cd ~/dev-env/skills_repo
 
 # 2. Interactive install (select skills + plugins)
 ./setup.sh
