@@ -68,7 +68,7 @@ if [[ "$INTERACTIVE" == "true" ]]; then
   echo ""
   echo "  Other:"
   echo "    a) All skills"
-  echo "    p) Plugins (superpowers, frontend-design, skill-creator, planning-with-files)"
+  echo "    p) Plugins (superpowers, frontend-design, skill-creator, planning-with-files, LSPs, telegram, code-review, feature-dev, commit-commands)"
   echo "    f) Full setup (all skills + plugins + CLI)"
   echo "    l) Register CLI command (claude-skills)"
   echo ""
@@ -160,6 +160,13 @@ required_plugins = {
     "frontend-design@claude-plugins-official": True,
     "planning-with-files@planning-with-files": True,
     "skill-creator@claude-plugins-official": True,
+    "typescript-lsp@claude-plugins-official": True,
+    "gopls-lsp@claude-plugins-official": True,
+    "pyright-lsp@claude-plugins-official": True,
+    "telegram@claude-plugins-official": True,
+    "code-review@claude-plugins-official": True,
+    "feature-dev@claude-plugins-official": True,
+    "commit-commands@claude-plugins-official": True,
 }
 
 required_marketplaces = {
@@ -182,7 +189,7 @@ settings["extraKnownMarketplaces"] = marketplaces
 with open(settings_path, "w") as f:
     json.dump(settings, f, indent=2)
 
-print("  ✓ Plugins enabled: superpowers, frontend-design, skill-creator, planning-with-files")
+print("  ✓ Plugins enabled: superpowers, frontend-design, skill-creator, planning-with-files, typescript-lsp, gopls-lsp, pyright-lsp, telegram, code-review, feature-dev, commit-commands")
 PYEOF
 fi
 
