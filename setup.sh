@@ -13,6 +13,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SKILLS_DIR="$HOME/.claude/skills"
+COMMANDS_DIR="$HOME/.claude/commands"
 
 # ── Parse flags ──
 INSTALL_SKILLS=false
@@ -134,6 +135,27 @@ elif [[ ${#SELECTED_SKILLS[@]:-0} -gt 0 ]]; then
     SKILL_LIST="$SKILL_LIST $skill_name"
   done
   echo "  ✓ Skills installed:$SKILL_LIST"
+fi
+
+# ── Install commands ──
+if [[ -d "$SCRIPT_DIR/commands" ]]; then
+  echo ""
+  echo "▶ Installing commands..."
+  mkdir -p "$COMMANDS_DIR"
+  CMD_LIST=""
+  for cmd_file in "$SCRIPT_DIR"/commands/*.md; do
+    [[ -f "$cmd_file" ]] || continue
+    cmd_name="$(basename "$cmd_file")"
+    target="$COMMANDS_DIR/$cmd_name"
+    if [[ -f "$target" ]]; then
+      echo "  ↻ $cmd_name (updating)"
+    else
+      echo "  + $cmd_name"
+    fi
+    cp "$cmd_file" "$target"
+    CMD_LIST="$CMD_LIST ${cmd_name%.md}"
+  done
+  echo "  ✓ Commands installed:$CMD_LIST"
 fi
 
 # ── NotebookLM dependencies ──

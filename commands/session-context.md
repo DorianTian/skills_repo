@@ -1,13 +1,6 @@
 ---
-name: session-context
-description: "Load full project context at session start — reads memory files, project docs, git history, and structure to present a concise situational briefing. Use at the beginning of every new session on ANY project, or when user says 项目现状, session context, catch me up, where were we, 接上次, 继续, 开始. Trigger proactively when a conversation is clearly a new session for an ongoing project and the user hasn't provided context yet. This is a UNIVERSAL skill — works for any project, any language, any framework."
+description: "Load full project context at session start — reads memory files, project docs, git history, and structure to present a concise situational briefing. Trigger: /session-context, 项目现状, 接上次, 继续"
 ---
-
-<!--
-input: New session start on any project
-output: Concise context briefing — recent progress, pending tasks, key decisions, blockers
-pos: Universal session context loader, project-agnostic
--->
 
 # Session Context Loader
 
