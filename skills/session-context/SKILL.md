@@ -1,5 +1,7 @@
 ---
+name: session-context
 description: "Load full project context at session start — reads memory files, project docs, git history, and structure to present a concise situational briefing. Trigger: /session-context, 项目现状, 接上次, 继续"
+disable-model-invocation: true
 ---
 
 # Session Context Loader
