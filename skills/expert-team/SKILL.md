@@ -132,6 +132,50 @@ pos: 核心 skill，自动激活
 - Be **specific and actionable**. No generic advice.
 - Dare to challenge the user's proposal if the expert would disagree.
 
+## Tool Usage — Research Before Advising
+
+Expert advice without context is generic advice. Before giving recommendations, use tools to ground your response in reality.
+
+### 1. Read the user's code first
+
+Before any architecture or design suggestion, understand what already exists:
+
+```
+Grep / Read → scan the relevant modules, patterns, and conventions in the project
+```
+
+- Giving React advice? Read the component structure and state management approach first.
+- SQL optimization? Read the actual schema and query before suggesting indexes.
+- Service design? Check existing service boundaries, proto files, and layer structure.
+
+Don't give "best practice" advice that contradicts the project's established patterns without acknowledging the gap.
+
+### 2. WebSearch for version-sensitive claims
+
+Framework APIs, library features, and tooling best practices change fast. When your advice depends on a specific version's behavior:
+
+```
+WebSearch → verify the API/feature exists in the version the project actually uses
+```
+
+This is especially important for: React (hooks behavior across versions), Vite/Webpack (config format changes), Go modules, database engine-specific SQL syntax.
+
+### 3. Ground advice in industry standards
+
+Experts give advice based on industry best practices, not company-specific conventions. When making recommendations:
+
+```
+WebSearch → look up authoritative sources: official docs, RFCs, well-known style guides, benchmark data
+```
+
+For example: Google's Go style guide, Uber's Go guide, PostgreSQL official docs, MySQL performance benchmarks from Percona, architecture patterns from Martin Fowler's bliki.
+
+The goal is industry-caliber advice. Company-specific adaptation is the user's job — experts provide the external reference point.
+
+### 4. Verify expert quotes
+
+When attributing a specific opinion or quote to an expert, prefer to WebSearch and confirm it's something they actually said or wrote. If you can't verify, say "based on their general principles" rather than presenting it as a direct quote.
+
 ## Accuracy Red Line
 
 - **Every technical claim must be defensible** — could you say this at a conference talk without being corrected?

@@ -1,0 +1,320 @@
+# Go PB Artifact Library v1 Guide
+
+## Overview
+
+Go PB artifact library (制品库) centralizes proto files, RPC framework client/server code, and protocol-related code in a dedicated GitLab repository. Application code and SDK can import directly via Go module management, eliminating version conflicts from duplicate proto imports.
+
+```
+┌─────────────┐     ┌─────────────┐
+│ artifact-go/│     │ artifact-go/│
+│   hello     │     │   world     │
+└──────┬──────┘     └──────┬──────┘
+       │                    │
+       ▼                    ▼
+┌──────────────────────────────────┐
+│          artifact-go/common      │
+│    (shared proto: srpc, web,     │
+│     validate, etc.)              │
+└──────────────────────────────────┘
+       │                    │
+       ▼                    ▼
+┌──────────┐          ┌──────────┐
+│ Service A│          │ Service B│
+└──────────┘          └──────────┘
+```
+
+## Why Use Artifact Library
+
+| Problem | Without Artifact Library | With Artifact Library |
+|---------|------------------------|----------------------|
+| Proto version management | Manual copy, easy to diverge | Centralized, Go module versioned |
+| Generated code in repo | Checked in, bloats repo, stale | Generated externally, imported as dependency |
+| Proto conflicts | Multiple imports of same proto cause panic | Single source of truth via common module |
+| Code review | Review generated code noise | Only review proto changes |
+
+---
+
+## Version Requirements
+
+| Tool | Minimum Version |
+|------|----------------|
+| FRPC | v1.16.0+ |
+| frpc_toolkit | v1.11.0+ |
+
+---
+
+## Setting Up Artifact Library for a New FRPC Project
+
+### Step 1: Verify Artifact Library Dependency
+
+Confirm the artifact library exists for your service. If it doesn't, contact the team lead to create one.
+
+### Step 2: Generate Project Code
+
+```bash
+# Update frpc_toolkit to v1.11.0+
+# Use create command to generate new project
+frpc_toolkit create -m "gitlab.futunn.com/xxx/example/frpc_demo" frpc_demo
+```
+
+### Step 3: Generate impl and stub_test Files
+
+```bash
+# -r: artifact library repo URL
+# -f: proto file path
+# -i: proto import paths (self + common)
+frpc_toolkit pbgen \
+  -r "gitlab.futunn.com/artifact-go/pb-server-example" \
+  -f ./proto/example.proto \
+  -i ./proto/self \
+  -i ./proto
+```
+
+When you see `run pb utilsuccess` — generation succeeded.
+
+### Step 4: Call Other RPC Services (optional)
+
+If your service calls other RPC services, use the Client object from the artifact library. See "Client Usage" section below.
+
+---
+
+## Simplified Directory Structure After Integration
+
+After integrating the artifact library, most generated proto/RPC code directories can be removed:
+
+**Before (FRPC scaffold raw):**
+```
+internal/
+  app/
+    client/          ← REMOVE
+    pb/              ← REMOVE
+    service/
+      echo.impl.go  ← KEEP (your implementation)
+Makefile             ← KEEP
+proto/
+  echo.proto         ← KEEP
+```
+
+**After (with artifact library):**
+```
+internal/
+  app/
+    service/
+      echo.impl.go
+Makefile
+proto/
+  echo.proto
+```
+
+The artifact library handles all generated code externally.
+
+---
+
+## Import Paths
+
+### Package Name Conversion Rule
+
+The `packageName` in proto files must be converted: strip underscores `_`, hyphens `-`, and dots `.`, then lowercase.
+
+| Proto packageName | Go import segment |
+|-------------------|-------------------|
+| `test_package` | `testpackage` |
+| `test-package` | `testpackage` |
+| `test.PACKAGE` | `testpackage` |
+
+### Import Patterns
+
+```go
+// Business protocol (API + PB)
+import api "gitlab.futunn.com/artifact-go/{artifact-name}/api/{packageName}"
+import pb "gitlab.futunn.com/artifact-go/{artifact-name}/pb/{packageName}"
+
+// Common/shared protocol
+import "gitlab.futunn.com/artifact-go/common/{artifact-name}/{goModuleName}"
+// goModuleName: strip underscores, hyphens, dots → lowercase
+```
+
+---
+
+## Service Registration
+
+### 1. Service Interface
+
+The artifact library generates a service interface with all methods defined in the proto:
+
+```go
+// gitlab.futunn.com/artifact-go/echo/api/echo/echo.go
+type EchoService interface {
+    EchoMethod(ctx context.Context, request *pb.MyEchoRequest, response *pb.MyEchoResponse) error
+}
+```
+
+### 2. Implement the Interface
+
+```go
+// internal/app/service/echo.impl.go
+import api "gitlab.futunn.com/artifact-go/echo/api/echo"
+
+type EchoServiceImp struct{} // Implements EchoService interface
+
+func (imp *EchoServiceImp) EchoMethod(ctx context.Context, request *pb.MyEchoRequest, response *pb.MyEchoResponse) error {
+    // Forward to business layer
+    return nil
+}
+```
+
+### 3. Register in init()
+
+```go
+// internal/app/service/echo.impl.go
+import "xxx/internal/app/service" // Must import the package where echo.impl.go lives
+
+func init() {
+    api.RegisterEchoService(&EchoServiceImp{}) // Register implementation
+}
+```
+
+The `RegisterEchoService` function is generated by the artifact library:
+
+```go
+// gitlab.futunn.com/artifact-go/echo/api/echo/echo.server.go
+func RegisterEchoService(echoService EchoService) { ... }
+```
+
+Make sure `cmd/main.go` imports the service package so `init()` runs:
+
+```go
+// cmd/main.go
+import _ "xxx/internal/app/service"
+```
+
+---
+
+## Client Usage
+
+### Creating a Client
+
+```go
+import (
+    "gitlab.futunn.com/infra/frpc/pkg/client"
+    "gitlab.futunn.com/infra/frpc/pkg/client/callopt"
+    api "gitlab.futunn.com/artifact-go/echo/api/echo"
+)
+
+// Create client with address and options
+cli, err := api.NewEchoServiceClient("tcp://172.27.0.202:3567",
+    client.WithRequestTimeout(time.Second*10))
+```
+
+**Important notes:**
+- Client initialization is the caller's responsibility. First call `New` to create a Client object, configure via `client.Option`, then use methods on the client for remote calls.
+- Client global initialization depends on the framework. For components initialized via `appinfo` framework init, use the framework's init lifecycle (auto-recycle on shutdown).
+- Don't dynamically create massive numbers of Client objects — they share common resources. Use a singleton or pool pattern. Client objects lost without reference won't be GC'd cleanly.
+- Two ways to pass options: `client.Option` at creation, `callopt.Option` per-call.
+
+### Synchronous Call
+
+```go
+resp, err := cli.EchoMethod(context.Background(), req,
+    callopt.WithRequestTimeout(time.Second*5))
+```
+
+### Client Interface
+
+The generated client interface includes both sync and async methods:
+
+```go
+type EchoServiceClient interface {
+    EchoMethod(ctx context.Context, request *echo.Request, opts ...callopt.Option) (
+        response *common_proto_demo.EchoResponse, err error)
+
+    EchoMethodAsync(ctx context.Context, request *echo.Request,
+        callback model.AsyncCallBack, opts ...callopt.Option) error
+}
+```
+
+- Every sync method also has an async variant
+- Per-call behavior controlled via `callopt.Option`
+- Async methods use `AsyncCallBack` — see SRPC client docs for details
+
+---
+
+## Best Practices
+
+### Proto File Organization
+
+1. **`proto/self/`** stores this service's own business protocols and local dependencies (non-public). **Import public protocols directly — don't put them in common.**
+2. **`proto/`** stores dependent service protocols and public protocols.
+3. Extract shared portions across services as public protocols.
+
+### Artifact Library Versioning
+
+- Version numbers: `v1.x.x` following Go module conventions
+- Use the project's main branch as the primary artifact generation branch
+- After testing, merge to main branch, generate the official artifact, and tag it
+- Create a standalone RPC directory for organizing downstream service code
+
+### Proto Import Convention
+
+Do NOT add `common` prefix when importing public protocols locally. Import them directly:
+
+```go
+// Correct
+import "gitlab.futunn.com/artifact-go/common/validate/validate"
+
+// Wrong — don't add common in proto import
+import "common/validate/validate"
+```
+
+---
+
+## FAQ & Troubleshooting
+
+### 1. `go get` Fails: "project not found or no permission"
+
+- Verify the artifact library exists on GitLab
+- Check `.netrc` file for correct credentials
+- Verify git token permissions
+
+### 2. `panic: proto: file "srpc.proto" is already registered`
+
+This happens because the artifact library moved base protocols (srpc.proto, web.proto) to Fservice management. Update import paths:
+
+| Old Path | New Path |
+|----------|----------|
+| `gitlab.futunn.com/golang/srpc` | `gitlab.futunn.com/artifact-go/common/srpc` |
+| `gitlab.futunn.com/golang/srpc/web` | `gitlab.futunn.com/artifact-go/common/web` |
+
+If using both old and new libraries simultaneously (srpc old + new, or srpc + web mixed), update the old library to `latest` in go.mod:
+
+```go
+// go.mod
+require(
+    gitlab.futunn.com/golang/srpc latest
+)
+```
+
+Then run `go mod tidy`.
+
+### 3. `unknown revision v1.0.11`
+
+Historical redundant versions were removed from srpc. Regenerate the artifact library to fix.
+
+### 4. `panic: proto: file "validate/validate.proto" has a name conflict`
+
+The validate protocol was also moved to Fservice. Update:
+
+| Old Path | New Path |
+|----------|----------|
+| `gitlab.futunn.com/infra/template/protoc-gen-validate/validate` | `gitlab.futunn.com/artifact-go/common/validate` |
+
+If using both artifact library and non-artifact library code with validate.proto, update the old validate version in go.mod:
+
+```go
+// go.mod
+require(
+    gitlab.futunn.com/infra/template/protoc-gen-validate v1.1.6
+)
+```
+
+Then run `go mod tidy`.
