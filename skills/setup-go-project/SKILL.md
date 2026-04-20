@@ -208,7 +208,18 @@ Key points:
 - Import paths follow: `gitlab.futunn.com/artifact-go/{lib}/api/{pkg}` and `.../pb/{pkg}`
 - Package name conversion: strip underscores, hyphens, dots → lowercase
 
-### Step 5: Wire Up Layers
+### Step 5: CI/CD & Deployment Config
+
+Every Futu FRPC project needs `deploy.yaml` at project root + correct Makefile build flags + CI packaging rules. Read `references/ci-deployment-guide.md` for full templates and rules.
+
+Key points:
+- **`deploy.yaml`** — copy from `fds_explore_service/deploy.yaml`; update `program_name` and `tcp_port` (must be the srpc port from `conf.toml`, not http)
+- **CI packaging paths** — `conf`, `bin`, `deploy.yaml`; exclude `.git/**`
+- **CI build script** — must export `GOPATH`/`GOMODCACHE`/`GOCACHE` before `make build` for dependency caching
+- **Makefile `build` target** — use `go build -p 2 ...` (keep CGO default on) to avoid OOM from FRPC's gorm driver blank imports (FRPC pulls clickhouse/postgres/sqlserver drivers even if you only use mysql). **Do NOT set `CGO_ENABLED=0`** — FRPC's transitive `golang/monitor` dep uses cgo on Linux to define `Inc`/`Set`, disabling cgo breaks the compile.
+- **CI OOM fingerprint** — `Error 1` with no compiler error output = SIGKILL = raise `-p` limit or ask ops for more memory
+
+### Step 6: Wire Up Layers
 
 Create initial files following the layer responsibilities:
 
@@ -282,6 +293,10 @@ Use this as a verification list after scaffolding:
 - [ ] PB artifact library integrated if applicable (see `references/pb-artifact-library.md`)
 - [ ] Proto files organized: `proto/self/` for own, `proto/` for dependencies
 - [ ] Error codes follow Futu error code specification
+- [ ] `deploy.yaml` exists at project root with correct `program_name` + srpc `tcp_port`
+- [ ] Makefile `build` target uses `go build -p 2` (keep CGO default on)
+- [ ] CI script exports `GOPATH`/`GOMODCACHE`/`GOCACHE` before `make build`
+- [ ] `gorm/main.go` reads DSN from `conf.toml` via `conf.NewConfig()`, no hardcoded password
 
 ---
 
@@ -290,4 +305,5 @@ Use this as a verification list after scaffolding:
 These contain detailed setup guides. Read them when the specific topic comes up:
 
 - **`references/pb-artifact-library.md`** — Complete Go PB artifact library v1 guide: version requirements, frpc_toolkit commands, import paths, service registration, client usage, best practices, and FAQ/troubleshooting
-- **`references/gorm-gen-guide.md`** — GORM Gen configuration template, FRPC integration, model generation patterns, and DAO code generation
+- **`references/gorm-gen-guide.md`** — GORM Gen configuration template with `conf.toml`-based DSN reading, FRPC integration, model generation patterns, and DAO code generation
+- **`references/ci-deployment-guide.md`** — CI/CD rules: `deploy.yaml` template, packaging paths, Makefile build flags, OOM diagnosis, and `gitlab-ci.yml` cache config

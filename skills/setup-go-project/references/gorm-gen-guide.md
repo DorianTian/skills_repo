@@ -30,50 +30,131 @@ Within FRPC projects, the `store/` directory lives alongside `model/` under `int
 
 ## Configuration Template
 
+**Hard rule: never hardcode DSN / username / password** in `gorm/main.go`. Always read from `conf/conf.toml` via FRPC's `pkg/conf` package. Keep `--dsn` as an override flag for edge cases (prod DB, other libraries, temporary experiments).
+
 Create `gorm/main.go`:
 
 ```go
 package main
 
 import (
+    "flag"
+    "fmt"
+    "os"
+    "strings"
+
+    "gitlab.futunn.com/infra/frpc/pkg/conf"
+    "gorm.io/driver/mysql"
     "gorm.io/gen"
-    // import your DB driver
+    "gorm.io/gorm"
 )
 
+type mysqlConfig struct {
+    Username  string `toml:"username"`
+    Password  string `toml:"password"`
+    Address   string `toml:"address"`
+    DBName    string `toml:"db_name"`
+    Collation string `toml:"collation"`
+}
+
 func main() {
+    configPath := flag.String("config", "conf/conf.toml", "Path to frpc conf.toml")
+    dsnOverride := flag.String("dsn", "", "Override DSN (bypasses conf.toml when set)")
+    printDSN := flag.Bool("print-dsn", false, "Print resolved DSN and exit (debug)")
+    flag.Parse()
+
+    dsn := *dsnOverride
+    if dsn == "" {
+        built, err := buildDSN(*configPath)
+        if err != nil {
+            fmt.Fprintf(os.Stderr, "failed to build DSN: %v\n", err)
+            os.Exit(1)
+        }
+        dsn = built
+    }
+    if *printDSN {
+        fmt.Println(dsn)
+        return
+    }
+
+    db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "failed to connect: %v\n", err)
+        os.Exit(1)
+    }
+
     g := gen.NewGenerator(gen.Config{
-        // DAO output path
-        OutPath:      "./internal/app/store",
-        // Model output path
-        ModelPkgPath: "./store/model",
-
-        // Recommended settings
-        FieldNullable:     true,  // Use pointer types for nullable fields
-        FieldSignable:     true,  // Use unsigned int types where applicable
-        FieldWithIndexTag: true,  // Generate index tags from DB
-        FieldWithTypeTag:  true,  // Generate type tags from DB
-
-        // Query interface mode
-        Mode: gen.WithDefaultQuery |   // Generate default query variable
-              gen.WithQueryInterface | // Generate query interface
-              gen.WithoutContext,       // Generate WithoutContext mode
+        OutPath:           "./internal/app/store",
+        ModelPkgPath:      "./internal/app/model/db",
+        Mode:              gen.WithDefaultQuery | gen.WithQueryInterface,
+        FieldNullable:     true,
+        FieldSignable:     true,
+        FieldWithIndexTag: true,
+        FieldWithTypeTag:  true,
     })
-
-    // Connect to database
-    // db, _ := gorm.Open(mysql.Open("root:password@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True"))
     g.UseDB(db)
 
-    // Generate basic CRUD for tables
     g.ApplyBasic(
         g.GenerateModel("table_name_1"),
         g.GenerateModel("table_name_2"),
     )
-
-    // Optional: Apply custom query interfaces
-    // g.ApplyInterface(func(model.Querier){}, model.User{})
-
     g.Execute()
 }
+
+// buildDSN reads [frpc.mysql.<instance>] from conf.toml using FRPC's config API.
+// Replace `<instance>` with your actual instance name (e.g. "metrics", "da_fds").
+func buildDSN(path string) (string, error) {
+    cfg := conf.NewConfig()
+    cfg.SetIgnoreUnused(true) // skip timeout/pool fields not needed for DSN
+    if err := cfg.LoadFile(path); err != nil {
+        return "", fmt.Errorf("load config: %w", err)
+    }
+
+    var m mysqlConfig
+    if err := cfg.Unmarshal("frpc.mysql.<instance>", &m); err != nil {
+        return "", fmt.Errorf("unmarshal [frpc.mysql.<instance>]: %w", err)
+    }
+    if m.Username == "" || m.Password == "" || m.Address == "" || m.DBName == "" {
+        return "", fmt.Errorf("missing required mysql fields")
+    }
+    if m.Collation == "" {
+        m.Collation = "utf8mb4_bin"
+    }
+
+    // FRPC address prefixes: test_{ip:port}, cmlb_{id}, fns://...
+    // Only test_{ip:port} is directly usable by gorm; others need --dsn override.
+    addr := strings.TrimPrefix(m.Address, "test_")
+    if strings.HasPrefix(addr, "cmlb_") || strings.Contains(addr, "://") {
+        return "", fmt.Errorf("address %q not directly usable; pass --dsn", m.Address)
+    }
+
+    return fmt.Sprintf(
+        "%s:%s@tcp(%s)/%s?charset=utf8mb4&collation=%s&parseTime=True&loc=Local",
+        m.Username, m.Password, addr, m.DBName, m.Collation,
+    ), nil
+}
+```
+
+### Why This Pattern
+
+| Anti-pattern | Problem | Fix |
+|---|---|---|
+| Hardcode DSN constant | Password rotates, tool drifts from reality | Read from conf.toml |
+| Only `--dsn` flag, no conf fallback | Every run requires passing password; easy to leak to shell history | Default = conf.toml, `--dsn` as override |
+| Use `pelletier/go-toml` directly | Redundant; FRPC already pulls it transitively via `pkg/conf` | Use `conf.NewConfig()` + `LoadFile` + `Unmarshal` |
+| Omit `SetIgnoreUnused(true)` | Strict mode fails on `dial_timeout`/`max_idle_conns` etc. | Always call `SetIgnoreUnused(true)` for partial struct reads |
+
+### Running
+
+```bash
+# Default: reads conf/conf.toml [frpc.mysql.<instance>]
+go run gorm/main.go
+
+# Override DSN (for prod DB, other libraries)
+go run gorm/main.go --dsn "user:pass@tcp(10.1.2.3:3306)/mydb?..."
+
+# Debug: print resolved DSN without running gen
+go run gorm/main.go --print-dsn
 ```
 
 ### Config Options Explained
