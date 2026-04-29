@@ -5,8 +5,9 @@ set -euo pipefail
 # claude-skills — Claude Code Skills Installer
 # Usage:
 #   claude-skills                 Interactive mode
-#   claude-skills --all           Install all skills
+#   claude-skills --all           Install all skills + external plugins
 #   claude-skills --skills        Install skills only
+#   claude-skills --external      Install external plugins only (gstack)
 #   claude-skills --link          Register CLI command
 #   Plugins are managed by claude-config (~/dev-env/claude_setting)
 # ══════════════════════════════════════════════════════════
@@ -16,6 +17,7 @@ SKILLS_DIR="$HOME/.claude/skills"
 
 # ── Parse flags ──
 INSTALL_SKILLS=false
+INSTALL_EXTERNAL=false
 LINK=false
 INTERACTIVE=false
 
@@ -24,16 +26,18 @@ if [[ $# -eq 0 ]]; then
 else
   for arg in "$@"; do
     case "$arg" in
-      --all) INSTALL_SKILLS=true ;;
+      --all) INSTALL_SKILLS=true; INSTALL_EXTERNAL=true ;;
       --skills) INSTALL_SKILLS=true ;;
+      --external) INSTALL_EXTERNAL=true ;;
       --link) LINK=true ;;
       --help|-h)
         echo "Usage: claude-skills [options]"
         echo ""
         echo "Options:"
         echo "  (none)       Interactive mode"
-        echo "  --all        Install all skills"
+        echo "  --all        Install all skills + external plugins"
         echo "  --skills     Install skills only"
+        echo "  --external   Install external plugins only (gstack)"
         echo "  --link       Register CLI command"
         echo "  --help       Show this help"
         echo ""
@@ -65,7 +69,8 @@ if [[ "$INTERACTIVE" == "true" ]]; then
   echo ""
   echo "  Other:"
   echo "    a) All skills"
-  echo "    f) Full setup (all skills + CLI)"
+  echo "    e) External plugins (gstack)"
+  echo "    f) Full setup (all skills + external + CLI)"
   echo "    l) Register CLI command (claude-skills)"
   echo ""
   printf "  Enter choices (e.g. 1 3 p, or f for full): "
@@ -75,8 +80,9 @@ if [[ "$INTERACTIVE" == "true" ]]; then
   for choice in $choices; do
     case "$choice" in
       a) INSTALL_SKILLS=true ;;
+      e) INSTALL_EXTERNAL=true ;;
       l) LINK=true ;;
-      f) INSTALL_SKILLS=true; LINK=true ;;
+      f) INSTALL_SKILLS=true; INSTALL_EXTERNAL=true; LINK=true ;;
       *[0-9]*)
         idx=$((choice - 1))
         if [[ $idx -ge 0 && $idx -lt ${#AVAILABLE_SKILLS[@]} ]]; then
@@ -151,6 +157,34 @@ if [[ "$INSTALL_SKILLS" == "true" ]] || [[ " ${SELECTED_SKILLS[*]:-} " == *" not
     else
       echo "  ⚠ python3 not found, skip notebooklm deps"
     fi
+  fi
+fi
+
+# ── External plugins (git-based) ──
+GSTACK_REPO="https://github.com/garrytan/gstack.git"
+GSTACK_DIR="$SKILLS_DIR/gstack"
+
+if [[ "$INSTALL_EXTERNAL" == "true" ]]; then
+  echo ""
+  echo "▶ Installing external plugins..."
+
+  # gstack
+  if [[ -d "$GSTACK_DIR/.git" ]]; then
+    echo "  ↻ gstack (updating)"
+    git -C "$GSTACK_DIR" pull --ff-only 2>/dev/null || echo "  ⚠ gstack pull failed, running setup on existing version"
+  else
+    echo "  + gstack (cloning)"
+    [[ -d "$GSTACK_DIR" ]] && rm -rf "$GSTACK_DIR"
+    git clone --single-branch --depth 1 "$GSTACK_REPO" "$GSTACK_DIR"
+  fi
+
+  if command -v bun &>/dev/null; then
+    echo "  ▶ Running gstack setup (--prefix)..."
+    cd "$GSTACK_DIR" && ./setup --prefix -q 2>&1 | tail -3
+    cd "$SCRIPT_DIR"
+    echo "  ✓ gstack installed (prefix mode)"
+  else
+    echo "  ⚠ bun not found — gstack requires bun. Install: curl -fsSL https://bun.sh/install | bash"
   fi
 fi
 
