@@ -14,6 +14,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SKILLS_DIR="$HOME/.claude/skills"
+AGENTS_DIR="$HOME/.claude/agents"
 
 # ── Parse flags ──
 INSTALL_SKILLS=false
@@ -140,6 +141,40 @@ elif [[ ${#SELECTED_SKILLS[@]:-0} -gt 0 ]]; then
     SKILL_LIST="$SKILL_LIST $skill_name"
   done
   echo "  ✓ Skills installed:$SKILL_LIST"
+fi
+
+# ── Install subagent definitions (paired with expert-team / ai-mentors) ──
+NEED_EXPERT_AGENTS=false
+NEED_MENTOR_AGENTS=false
+
+if [[ "$INSTALL_SKILLS" == "true" ]]; then
+  NEED_EXPERT_AGENTS=true
+  NEED_MENTOR_AGENTS=true
+elif [[ ${#SELECTED_SKILLS[@]:-0} -gt 0 ]]; then
+  for s in "${SELECTED_SKILLS[@]}"; do
+    case "$s" in
+      expert-team) NEED_EXPERT_AGENTS=true ;;
+      ai-mentors) NEED_MENTOR_AGENTS=true ;;
+    esac
+  done
+fi
+
+if { [[ "$NEED_EXPERT_AGENTS" == "true" ]] || [[ "$NEED_MENTOR_AGENTS" == "true" ]]; } && [[ -d "$SCRIPT_DIR/agents" ]]; then
+  echo ""
+  echo "▶ Installing subagent definitions..."
+  mkdir -p "$AGENTS_DIR"
+  AGENT_COUNT=0
+  for agent_file in "$SCRIPT_DIR"/agents/*.md; do
+    [[ ! -f "$agent_file" ]] && continue
+    agent_name="$(basename "$agent_file")"
+    case "$agent_name" in
+      expert-*) [[ "$NEED_EXPERT_AGENTS" != "true" ]] && continue ;;
+      mentor-*) [[ "$NEED_MENTOR_AGENTS" != "true" ]] && continue ;;
+    esac
+    cp "$agent_file" "$AGENTS_DIR/$agent_name"
+    AGENT_COUNT=$((AGENT_COUNT + 1))
+  done
+  echo "  ✓ Subagents installed: $AGENT_COUNT files → $AGENTS_DIR"
 fi
 
 # ── NotebookLM dependencies ──
